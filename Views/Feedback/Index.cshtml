@@ -1,0 +1,39 @@
+﻿@model IEnumerable<DAW.Models.Feedback>
+
+@{
+    ViewData["Title"] = "Feedback";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<a asp-controller="Feedback" asp-action="Create" class="btn btn-success">Adaugă Feedback Nou</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Scor</th>
+            <th>Comentariu</th>
+            <th>Știre Asociată</th>
+            <th>Acțiuni</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Scor</td>
+                <td>@item.Comentariu</td>
+                <td>@item.Stire.Titlu</td> <!-- Presupunând că există o relație și fiecare feedback are o știre asociată -->
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary">Editează</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Detalii</a>
+                    <!-- Butonul de ștergere folosind un formular pentru a trimite cererea POST -->
+                    <form asp-action="DeleteConfirmed" asp-route-id="@item.Id" method="post" class="d-inline">
+                        <input type="hidden" name="__RequestVerificationToken" value="@Html.AntiForgeryToken()" />
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Ești sigur că vrei să ștergi acest feedback?');">Șterge</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

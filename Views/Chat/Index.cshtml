@@ -1,0 +1,16 @@
+﻿<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script>
+    var connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub") // Aici specificați ruta hub-ului
+        .build();
+
+    connection.on("ReceiveMessage", function (user, message) {
+        // Manipulați mesajul primit și afișați-l în interfață
+    });
+
+    connection.start().then(function () {
+        // Realizați acțiuni după ce conexiunea a fost stabilită
+    }).catch(function (err) {
+        console.error(err.toString());
+    });
+</script>

@@ -1,0 +1,10 @@
+﻿@model IEnumerable<DAW.Models.Categorii>
+
+<h1>Categorii</h1>
+
+<ul>
+    @foreach (var categorie in Model)
+    {
+        <li>@Html.DisplayFor(modelItem => categorie.Nume)</li>
+    }
+</ul>

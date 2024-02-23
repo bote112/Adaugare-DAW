@@ -1,0 +1,12 @@
+﻿@model IEnumerable<DAW.Models.Stiri>
+
+<h1>Știri</h1>
+
+@foreach (var stire in Model)
+{
+    <div>
+        <h2>@Html.DisplayFor(modelItem => stire.Titlu)</h2>
+        <p>@Html.DisplayFor(modelItem => stire.Continut)</p>
+        <a href="@Url.Action("Details", "Stiri", new { id = stire.Id })">Citeste mai mult...</a>
+    </div>
+}
