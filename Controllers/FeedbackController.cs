@@ -1,26 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DAW.Models;
-using DAW.Services;
-using System.Collections.Generic;
+using DAW.Repositories;
 using System.Threading.Tasks;
 
 namespace DAW.Controllers
 {
+    [Authorize]
     public class FeedbackController : Controller
     {
-        private readonly IFeedbackService _feedbackService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public FeedbackController(IFeedbackService feedbackService)
+        public FeedbackController(IUnitOfWork unitOfWork)
         {
-            _feedbackService = feedbackService;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: Feedback
-        [Authorize]
         public async Task<IActionResult> Index()
         {
-            var feedbacks = await _feedbackService.GetAllFeedbackAsync();
+            var feedbacks = await _unitOfWork.Feedbacks.GetAllFeedbackAsync();
             return View(feedbacks);
         }
 
@@ -28,7 +27,6 @@ namespace DAW.Controllers
         [Authorize(Roles = "User, Admin")]
         public IActionResult Create()
         {
-            // Implementează logica pentru popularea oricăror date necesare pentru formular
             return View();
         }
 
@@ -38,14 +36,13 @@ namespace DAW.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _feedbackService.CreateFeedbackAsync(feedback);
+                await _unitOfWork.Feedbacks.CreateFeedbackAsync(feedback);
+                await _unitOfWork.CompleteAsync();
                 return RedirectToAction(nameof(Index));
             }
-            // Implementează logica pentru re-popularea oricăror date necesare pentru formular în caz de eroare
             return View(feedback);
         }
 
-        // Implementează metodele pentru Edit, Details, Delete, etc., utilizând _feedbackService
-        // pentru a efectua operațiuni specifice pe date, similar cu cele pentru Create și Index.
+        // Adaugă aici metodele pentru Edit, Delete, etc., folosind _unitOfWork.Feedbacks și _unitOfWork.CompleteAsync() după necesitate
     }
 }

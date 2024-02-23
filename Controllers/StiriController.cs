@@ -1,31 +1,30 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DAW.Models;
-using DAW.Services; // Include serviciul
+using DAW.Repositories;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAW.Controllers
 {
+    [Authorize]
     public class StiriController : Controller
     {
-        private readonly IStiriService _stiriService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public StiriController(IStiriService stiriService)
+        public StiriController(IUnitOfWork unitOfWork)
         {
-            _stiriService = stiriService;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: Stiri
-        [Authorize]
         public async Task<IActionResult> Index()
         {
-            var stiri = await _stiriService.GetAllStiriAsync();
+            var stiri = await _unitOfWork.Stiri.GetAllAsync();
             return View(stiri);
         }
 
         // GET: Stiri/Details/5
-        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,7 +32,7 @@ namespace DAW.Controllers
                 return NotFound();
             }
 
-            var stire = await _stiriService.GetStireByIdAsync(id.Value);
+            var stire = await _unitOfWork.Stiri.GetByIdAsync(id.Value);
             if (stire == null)
             {
                 return NotFound();
@@ -50,14 +49,14 @@ namespace DAW.Controllers
         }
 
         // POST: Stiri/Create
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Titlu,Continut,DataPublicarii,CategorieId")] Stiri stire)
         {
             if (ModelState.IsValid)
             {
-                await _stiriService.CreateStireAsync(stire);
+                await _unitOfWork.Stiri.CreateAsync(stire);
+                await _unitOfWork.CompleteAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(stire);
@@ -72,7 +71,7 @@ namespace DAW.Controllers
                 return NotFound();
             }
 
-            var stire = await _stiriService.GetStireByIdAsync(id.Value);
+            var stire = await _unitOfWork.Stiri.GetByIdAsync(id.Value);
             if (stire == null)
             {
                 return NotFound();
@@ -81,7 +80,6 @@ namespace DAW.Controllers
         }
 
         // POST: Stiri/Edit/5
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Titlu,Continut,DataPublicarii,CategorieId")] Stiri stire)
@@ -95,7 +93,8 @@ namespace DAW.Controllers
             {
                 try
                 {
-                    await _stiriService.UpdateStireAsync(stire);
+                    await _unitOfWork.Stiri.UpdateAsync(stire);
+                    await _unitOfWork.CompleteAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -122,7 +121,7 @@ namespace DAW.Controllers
                 return NotFound();
             }
 
-            var stire = await _stiriService.GetStireByIdAsync(id.Value);
+            var stire = await _unitOfWork.Stiri.GetByIdAsync(id.Value);
             if (stire == null)
             {
                 return NotFound();
@@ -132,20 +131,18 @@ namespace DAW.Controllers
         }
 
         // POST: Stiri/Delete/5
-        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _stiriService.DeleteStireAsync(id);
+            await _unitOfWork.Stiri.DeleteAsync(id);
+            await _unitOfWork.CompleteAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private async Task<bool> StireExists(int id)
         {
-            // Această funcție poate fi mutată în serviciu dacă preferi să centralizezi logica
-            var stire = await _stiriService.GetStireByIdAsync(id);
-            return stire != null;
+            return await _unitOfWork.Stiri.GetByIdAsync(id) != null;
         }
     }
 }

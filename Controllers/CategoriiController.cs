@@ -1,26 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DAW.Models;
-using DAW.Services;
-using System.Collections.Generic;
+using DAW.Repositories;
 using System.Threading.Tasks;
 
 namespace DAW.Controllers
 {
+    [Authorize]
     public class CategoriiController : Controller
     {
-        private readonly ICategoriiService _categoriiService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoriiController(ICategoriiService categoriiService)
+        public CategoriiController(IUnitOfWork unitOfWork)
         {
-            _categoriiService = categoriiService;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: Categorii
-        [Authorize]
         public async Task<IActionResult> Index()
         {
-            var categorii = await _categoriiService.GetAllCategoriiAsync();
+            var categorii = await _unitOfWork.Categorii.GetAllAsync();
             return View(categorii);
         }
 
@@ -37,7 +36,8 @@ namespace DAW.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _categoriiService.CreateCategorieAsync(categorie);
+                await _unitOfWork.Categorii.CreateAsync(categorie);
+                await Task.Run(() => _unitOfWork.Complete());
                 return RedirectToAction(nameof(Index));
             }
             return View(categorie);
@@ -52,7 +52,7 @@ namespace DAW.Controllers
                 return NotFound();
             }
 
-            var categorie = await _categoriiService.GetCategorieByIdAsync(id.Value);
+            var categorie = await _unitOfWork.Categorii.GetByIdAsync(id.Value);
             if (categorie == null)
             {
                 return NotFound();
@@ -71,7 +71,8 @@ namespace DAW.Controllers
 
             if (ModelState.IsValid)
             {
-                await _categoriiService.UpdateCategorieAsync(categorie);
+                await _unitOfWork.Categorii.UpdateAsync(categorie);
+                await Task.Run(() => _unitOfWork.Complete());
                 return RedirectToAction(nameof(Index));
             }
             return View(categorie);
@@ -86,7 +87,7 @@ namespace DAW.Controllers
                 return NotFound();
             }
 
-            var categorie = await _categoriiService.GetCategorieByIdAsync(id.Value);
+            var categorie = await _unitOfWork.Categorii.GetByIdAsync(id.Value);
             if (categorie == null)
             {
                 return NotFound();
@@ -99,7 +100,8 @@ namespace DAW.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _categoriiService.DeleteCategorieAsync(id);
+            await _unitOfWork.Categorii.DeleteAsync(id);
+            await Task.Run(() => _unitOfWork.Complete());
             return RedirectToAction(nameof(Index));
         }
     }
